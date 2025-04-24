@@ -1,0 +1,25 @@
+---
+title: "Teoretiska frågor"
+format: pdf
+---
+
+Här kan du besvara de frågor som tillhör den teoretiska delen av uppgiften.
+
+1. En QQ-plot är en graf som visar hur kvantilerna i en datamängd (Y) förhåller sig till kvantilerna från en teoretisk fördelning (X), oftast en normalfördelning. Om punkterna i grafen följer en ungefärlig rak linje, tyder det på att datan är normalfördelad.
+
+2. När vi använder en modell för att prediktera så är syftet att få ett resultat, exempelvis hur mycket ett hus kan vara värt, vi är då intresserade av att få ett värde. När vi talar om inferens så innebär det att vi också vill förstå vad det är som påverkar huspriset, och således inte bara prediktionen. 
+
+3. 
+Skillnaden mellan konfidensintervall och prediktionsintervall är att prediktionsintervallet är mer osäkert därför att det också inkluderar feltermen (slumpmässigheten) epsilon vid en ny observation. Det vill säga osäkerheten i själva obeservationen. Därför är prediktionsintervallet bredare än konfidensintervallet, som endast uppskattar hur säkra vi är på det förväntade medelvärdet Y.
+
+4. Beta 0 är interceptet och visar vad $Y$ skulle vara om alla andra variabler är noll. Varje annan beta-parameter (β1 ... βp) visar lutningen för sin respektive variabel. Alltså hur mycket $Y$ påverkas när just den variabeln ändras, medan övriga är konstanta. Alla beta tillsammans med feltermen epsilon ger det estimerade värdet på $Y$.
+
+5. Man kan använda BIC för att jämföra modeller, men det baseras helt på träningsdatan. Det betyder att vi inte får någon riktig uppfattning om hur väl modellen fungerar på ny data.
+
+Syftet med att dela upp i träning, validering och test är just att testa hur modellen generaliserar. Detta är inte något som BIC gör. BIC är ett hjälpmedel för att välja mellan olika modeller, men det ersätter inte behovet av att utvärdera modellen på ny data.
+
+6. 1. Börjar med en modell utan några prediktorer alls. Den estimerar medelvärdet för alla observationer.
+    2. För varje antal prediktorer, från 1 till det totala antalet, testas alla möjliga kombinationer av just det antalet prediktorer. Av dessa väljs den modell som har bäst resultat. Lägst RSS eller högst R².
+    3. Slutligen jämförs de bästa modellerna från varje nivå och man väljer den av dem baserat på ett utvärderingsmått som BIC, AIC eller justerat R². Alternativt genom valideringsdata eller cross-validation.
+
+7. Hur bra vi än tränar en modell så kommer den aldrig att vara helt korrekt. Den förenklar verkligheten och kommer alltid att ha vissa fel. Men om modellen ändå är tillräckligt bra på att prediktera eller förklara det vi är intresserade av, kan den fortfarande vara väldigt användbar.

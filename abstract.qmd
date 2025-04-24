@@ -1,0 +1,7 @@
+---
+format:
+  pdf
+---
+# Abstrakt {.unnumbered}
+
+The aim of this project was to investigate whether a relatively simple linear regression model could predict car prices with a coefficient of determination (R²) of at least 0.80 using only two or three predictors. Data was collected from Blocket.se, and three different models were trained. All models achieved an R² greater than 0.80. Since the goal was to keep the model simple, the best-performing model was not selected. Instead, a model with fewer predictors was chosen, which still demonstrated strong predictive performance. The results show that a straightforward model can effectively estimate car prices for new observations, thereby fulfilling the objectives of the study.

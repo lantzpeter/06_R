@@ -1,0 +1,444 @@
+---
+title: "Resultat och diskussion"
+format: pdf
+---
+## Resultat
+### Resultat efter träning
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#rm(list = ls())
+library(tidyverse)
+library(ggplot2)
+library(glue)
+load("data/data_volvo_prepared.RData")
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Checking all is ok with data before split.
+names(data)
+summary(data)
+dim(data)
+colSums(is.na(data))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#No use for orig_row anymore, and i dont want models to train on it. So i drop it.
+data <- data |>
+    select(-orig_row)
+names(data)
+dim(data)
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Splitng data so i can train, val and test the moodels.
+spec = c(train = .6, validate = .2, test = .2)
+
+set.seed(123)
+g = sample(cut(
+  seq(nrow(data)), 
+  nrow(data)*cumsum(c(0, spec)),
+  labels = names(spec)
+))
+
+res = split(data, g)
+
+train <- res$train
+val   <- res$validate
+test  <- res$test
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Checking the split was successful.
+dim(train)
+dim(val)
+dim(test)
+```
+
+#### Resultat Modell 1 - Alla prediktorer
+Den första modellen som tränats är en multipel regressionsmodell med samtliga tillgängliga prediktorer. Eftersom modellens output var omfattande valde jag att enbart redovisa de mest centrala måtten.
+Resultatet visade:
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Training with all variables to see which ones affect or not.
+model_1 <- lm(price ~ ., data=train)
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+model_1_summary <-summary(model_1)
+model_1_summary
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+library(car)
+#vif(model_1) #Remove "#" to run code. Puttiinig # so i can continue running the code.  
+mm <- model.matrix(price ~ ., data = train) # Checking which dummy variables were generated from categorical predictors
+
+colnames(mm)
+```
+
+- **R²:** 0.9175
+- **Justerat R²:** 0.9040
+- **Residual standard error (RSE):** 53 626
+- **F-statistic:** 67.93 (df = 75, 458), p-värde < 2.2e-16
+
+Detta innebar att modellen förklarade över 91 % av variationen i bilpriset, vilket var ett mycket gott resultat.
+
+Två variabler kunde inte uppskattas i modellen. Mer om detta går att läsa i avsnittet ”Undersökning av teoretiska antaganden”.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+alias(model_1)
+table(train$model == "C70")
+table(train$region == "Örebro")
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Droping color and region as it's not significant in the model.
+col_drop <- c("color", "region")
+
+train <- train |> select(-all_of(col_drop))
+val <- val |> select(-all_of(col_drop))
+test <- test |> select(-all_of(col_drop))
+names(train) # Checking to se if columns were dropped.
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Retraining the model with the new data to see how it performs now.
+model_1 <- lm(price ~ ., data = train)
+model_1_summary <- summary(model_1)
+model_1_summary
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Still problem with singularity. To few observations for C70. Need to count how many
+# observation there is total for this model
+data |>
+  filter(model == "C70") |>
+  count()
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Removing C70 due to problem with to few observations.
+train <- train |> filter(model != "C70")
+val   <- val   |> filter(model != "C70")
+test  <- test  |> filter(model != "C70")
+```
+
+#### Resultat Modell 1 – Justerade prediktorer
+
+Modellen tränades på hela det rensade träningsdatasetet med samtliga prediktorer (utom `color`, `region` och `model == "C70"`). 
+Resultatet visade:
+
+- **R²:** 0.9105
+- **Justerat R²:** 0.9023
+- **Residual standard error (RSE):** 54 120
+- **F-statistic:** 110.1 (df = 45, 487), p-värde < 2.2e-16
+
+Modellen visade hög förklaringsgrad och god modellanpassning. Inga problem med singulariteter eller multikollinearitet identifierades.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+model_1 <- lm(price ~ ., data = train)
+model_1_sum <- summary(model_1)
+vif(model_1)
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+model_2 <- lm(price ~ year_model + miles + hpower, data = train)
+model_2_sum <- summary(model_2)
+model_2_sum
+vif(model_2)
+```
+
+#### Resultat Modell 2
+Den andra modellen tränades med endast tre prediktorer: year_model, miles och hpower. Detta var i linje med syftet att hitta en enklare modell.
+
+- **R²:** 0.8191
+- **Justerat R²:** 0.8181
+- **Residual standard error (RSE):** (RSE): 73 830
+- **F-statistic:** 798.4 (df = 3, 529), p-värde < 2.2e-16
+
+Vid kontroll av multikollinearitet med vif() visade samtliga prediktorer låga värden:
+
+year_model ≈ 2.19
+miles ≈ 2.06
+hpower ≈ 1.42
+
+Detta indikerar att modellen inte led av multikollinearitet.
+
+#### Resultat Modell 3 (Subset Selection)
+Best Subset Selection testades på samtliga 11 prediktorer för att identifiera den bästa modellen med få prediktorer. Den modell som gav högst justerat R² innehöll följande fyra variabler: year_model, miles, hpower och modelEX90.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#install.packages("leaps")
+library(leaps)
+dim(train) #Checking value of predictors so i know how many nvmax i need to choose.
+model_3 <- regsubsets(price ~ ., data = train, nvmax = 11)
+model_3_sum <- summary(model_3)
+model_3_sum
+```
+
+
+```{r}
+#| echo: false
+#| fig-cap: "Justerat R² för olika antal prediktorer. Brytpunkten där modellen slutar ge tydlig förbättring bedöms vara vid fyra prediktorer. Den fjärde variabeln var dock en specifik bilmodell (EX90), vilket ansågs vara för snävt för en generell modell och valdes därför bort."
+plot(model_3_sum$adjr2, type = "b", xlab = "Antal prediktorer", ylab = "Justerat R²")
+```
+
+
+```{r}
+#| echo: false
+#| #| results: "hide"
+#| warning: false
+coef(model_3, 4)
+```
+
+Eftersom modelEX90 endast representerar en enskild bilmodell, och målet var att ta fram en generell modell, valdes den bort. I stället prövades en ny modell där fuel (t.ex. El, Hybrid) användes som fjärde prediktor då tidigare EDA visat skillnader i pris mellan bränsletyper.
+
+Resultat för denna justerade modell presenteras i nästa avsnitt.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+model_3 <- lm(price ~ fuel + year_model + miles + hpower, data = train)
+model_3_sum <- summary(model_3)
+model_3_sum
+```
+
+#### Resultat Modell 3 - 4 prediktorer
+
+Den tredje modellen tränades med prediktorerna fuel, year_model, miles och hpower, där fuel användes för att särskilja mellan förbränningsmotorer och el-/hybridbilar.
+
+- **R²:** 0.8241
+- **Justerat R²:** 0.8218
+- **Residual standard error (RSE):** 73 080
+- **F-statistic:** 351.4 (df = 7, 525), p-värde < 2.2e-16
+
+### Resultat efter validering
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+# Some model values (e.g. "850") were not present in the training data, which caused an error.
+# To enable validation, I remove any values in val/test that were not seen during training.
+val <- val |> filter(model %in% unique(train$model))
+test <- test |> filter(model %in% unique(train$model))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+val_pred_m1 <- predict(model_1, newdata = val)
+val_pred_m2 <- predict(model_2, newdata = val)
+val_pred_m3 <- predict(model_3, newdata = val)
+```
+
+
+```{r}
+#| echo: false
+#| #| warning: false
+library(Metrics)  # rmse()
+
+results <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3"),
+  RMSE_val = c(rmse(val$price, val_pred_m1),
+               rmse(val$price, val_pred_m2),
+               rmse(val$price, val_pred_m3)),
+  Adjusted_R2 = c(summary(model_1)$adj.r.squared,
+                  summary(model_2)$adj.r.squared,
+                  summary(model_3)$adj.r.squared),
+  BIC = c(BIC(model_1), BIC(model_2), BIC(model_3))
+)
+
+results
+```
+
+#### Jämförelse av modeller
+Valideringsresultaten visade följande prestanda för de tre modellerna:
+
+| Modell   | RMSE (val-data) | Justerat R² | BIC      |
+|----------|------------------|--------------|----------|
+| Modell 1 | 51 361           | 0.902        | 13 378   |
+| Modell 2 | 73 575           | 0.818        | 13 489   |
+| Modell 3 | 73 022           | 0.822        | 13 500   |
+
+Modell 1 hade lägst RMSE, högst justerat R² och lägst BIC, vilket indikerade bäst prestanda totalt sett. Däremot innehöll den flest prediktorer, vilket kan göra modellen mer komplex och svårtolkad i praktisk användning.
+
+Eftersom syftet var att bygga en så **enkel modell som möjligt** utan att förlora alltför mycket precision, var även **modell 2 och 3** mycket relevanta alternativ. Dessa modeller presterade på en jämförbar nivå men med endast tre till fyra prediktorer. Det gjorde dem bättre lämpade för prediktion i ett praktiskt sammanhang där tillgången till variabler kan vara begränsade.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Saving model to use in undersokning_antaganden.qmd
+saveRDS(model_3, file = "model/model_3.rds")
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Saving train data for use in undersokning_antaganden.qmd
+saveRDS(train, file = "data/train_ua.rds")
+```
+
+### Modellens prestanda på testdata
+Som slutlig modell valdes modell 3. Den testades slutligen på tesdtatan.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+test_pred <- predict(model_3, newdata = test)
+test_rmse <- rmse(test$price, test_pred)
+test_rmse
+```
+
+Den uppnådde ett RMSE på cirka **139 500 kr**, vilket gav en uppfattning om hur mycket de faktiska priserna i genomsnitt skiljde sig från modellens predikterade värden.
+
+Detta innebar att modellen kan ge en relativt god prisuppskattning, men att osäkerheten ökar vid högre prisklasser, vilket också observerats i tidigare analyser.
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+# Checking data for expensive cars.
+train |> filter(price > 1000000)
+val   |> filter(price > 1000000)
+test  |> filter(price > 1000000)
+```
+
+Eftersom några enstaka bilar i träningsdatan kostade över en miljon kronor, undersöktes om sådana fanns i test- eller valideringsdata. Då inga högprisfordon förekom i testdatan, kan RMSE-värdet underskatta osäkerheten vid prediktion av mycket dyra bilar.
+
+#### Testar modellen med en ny observation
+Jag ville nu testa modellens förmåga att prediktera priset för en bil. Jag letade upp en riktig bilannons på blocket och matade in alla värden förutom pris. 
+
+Bilen hade följande specifikationer:
+Bränsle: Diesel
+Årsmodell: 2018
+Miltal: 14 610
+Hästkrafter: 191
+Pris i annonsen: 221 800 kr
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+new_car <- data.frame(
+  fuel = "Diesel",
+  year_model = 2018,
+  miles = 14610,
+  hpower = 191
+)
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+confidence_intervals <- predict(model_3, newdata = new_car, interval = "confidence", level = 0.95)
+prediction_intervals <- predict(model_3, newdata = new_car, interval = "prediction", level = 0.95)
+confidence_intervals
+prediction_intervals
+```
+
+
+```{r}
+#| echo: false
+data.frame(
+  Estimate = prediction_intervals[1],
+  CI_Lower = confidence_intervals[2],
+  CI_Upper = confidence_intervals[3],
+  PI_Lower = prediction_intervals[2],
+  PI_Upper = prediction_intervals[3]
+)
+```
+
+Priset i annonsen låg utanför konfidensintervallet men inom prediktionsintervallet, vilket var väntat. Det innebar att priset ligger inom det spann som modellen anser möjligt för enskilda observationer, även om det är något lägre än det förväntade medelvärdet. Den breda spridningen i prediktionsintervallet visade att osäkerheten var större vid enskilda observationer, vilket är normalt i regressionsanalys.
+
+## Diskussion
+### Val av modell och måluppfyllelse
+I arbetet tränades tre modeller med olika antal prediktorer, vilka utvärderades på valideringsdatan. Modell 1 innehöll samtliga tillgängliga prediktorer och hade den högsta förklaringsgraden (adjusted R² ≈ 0,90), medan modell 2 och 3 bestod av färre variabler men uppnådde ändå ett justerat R² kring 0,82.
+
+Eftersom målet var att utveckla en så enkel modell som möjligt med bibehållen god förklaringsgrad, valdes modell 3 som slutlig modell. Denna hade fyra prediktorer och bedömdes ge tillräcklig precision samtidigt som den var enklare att använda i praktiken.
+
+### Modellens begränsningar och valda förenklingar
+I modellen har flera faktorer som i verkligheten kan påverka priset valts bort – exempelvis extrautrustning, färg och region. Detta var ett medvetet val i syfte att förenkla modellen och minska brus. Till skillnad från exempelvis bostadsmarknaden, där läge och utseende har stor påverkan, tenderade faktorer som färg eller geografiskt läge inte att vara signifikanta för bilpris i detta dataset. Det kan bero på att bilar är flyttbara och konsumenter är villiga att resa för att köpa rätt bil – därmed påverkade inte platsen priset i samma utsträckning.
+
+### Generaliseringsförmåga och hantering av extrema värden
+För att förbättra modellens generaliseringsförmåga hade det varit möjligt att:
+
+- Filtrera bort extremt dyra bilar (outliers), vilket skulle ha gjort residualerna mer normalfördelade och minskat osäkerheten vid prediktion.
+
+- Samla in fler observationer av dyrare bilar, vilket hade gett en mer balanserad datamängd och bättre prediktion i de högre prisklasserna.
+
+I detta arbete valdes dock att behålla de extrema värdena. Dels av tidsbrist, men även för att undersöka hur modellen skulle bete sig med sådan data, vilket gav viktiga insikter inför framtida modellering.
+
+### Modellens prestanda och praktisk tillämpning
+Modellen presterade bra. På valideringsdatan låg RMSE runt 70 000 kr, och på testdatan ungefär 140 000 kr. Den ökade osäkerheten i testdatan kan bero på att det inte fanns några riktigt dyra bilar där, till skillnad från träningsdatan. Det tyder på att modellen funkar bra för vanliga bilar men får svårare med lyxsegmentet – vilket är rimligt.
+
+För att testa modellen i praktiken gjordes en prediktion på en riktig annons från Blocket: en dieselbil från 2018 med 14 610 mil och 191 hk. Modellen förutsåg priset till 247 387 kr, jämfört med annonspriset 221 800 kr – en skillnad på ca 25 000 kr. Det får ändå anses vara en träffsäker uppskattning med tanke på marknadens variationer.
+
+Spridningen i prediktionsintervallet förklaras delvis av att datan inte var helt normalfördelad – det fanns några bilar med väldigt höga priser. Jag hade kunnat transformera datan eller ta bort outliers, men valde att behålla dem för att se hur modellen funkar i praktiken även för lite mer extrema priser. Trots detta ger modellen en tillräckligt bra uppskattning, särskilt för vanligare biltyper.
+
+### Sammanfattning
+Syftet var att undersöka om en enkel modell med få prediktorer kunde ge en tillräckligt god förklaring av bilpriser – något som uppnåddes. Genom att gå från en komplex till en praktiskt användbar modell med fyra prediktorer, har arbetet visat att det är möjligt att förenkla utan att förlora allt för mycket precision.

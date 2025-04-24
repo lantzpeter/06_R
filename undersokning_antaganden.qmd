@@ -1,0 +1,103 @@
+---
+title: "Undersökning av teoretiska antaganden"
+format: pdf
+---
+
+## Problem efter modellering av modell 1.
+
+Modellen hade problem med att den inte kunde uppskatta två koefficienter:
+"Coefficients: (2 not defined because of singularities)".
+De koefficienter som inte kunde uppskattas var modelC70 och regionÖrebro.
+
+Vid försök att köra vif() (ett mått på multikollinearitet) uppstod ett felmeddelande: "Error in vif.default(model_1): there are aliased coefficients in the model".
+Det bekräftades genom att köra alias() som visade vilka variabler som var linjärt beroende av andra.
+
+Vid inspektion av tränningdatan så framgick att C70 endast innehöll en obeservation vilket gjorde att modellen inte kunde estimera dess effekt. RegionÖrebro däremot hade 32 observationer, men var linjärt beroende av andra prediktorer varpå multikollinearitet uppstod.
+
+En kontroll visade att C70 endast förekom fyra gånger i datan, vilket inte räckte för att modellen skulle kunna estimera dess effekt. Observationerna togs därför bort.
+
+Den nya modellen tränades om utan felmeddelanden. För att säkerställa att multikollinearitet inte längre var ett problem användes vif(). De justerade VIF-värdena låg samtliga under det kritiska värdet 5, vilket tydde på att multikollinearitet inte var ett problem i den aktuella modellen. Det högsta värdet var 3.73 (year_model) följt av 3.45 (type).
+
+## Undersökning av teoretiska antaganden - Modell 3
+För att säkerställa att den linjära regressionsmodellen (modell 3, som valts som slutlig modell) var tillförlitlig, behövde vissa teoretiska antaganden vara uppfyllda. Nedan följer en genomgång av dessa antaganden och hur de uppfyllts i modellen.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Loading model to be able to work with it
+model_3 <- readRDS("model/model_3.rds")
+#Loading traindata
+train <- readRDS("data/train_ua.rds")
+```
+
+### Undersökning av linjärt samband mellan $X$ och $Y$
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: 'Residualplot som visar ett svagt icke-linjärt mönster men relativt konstant varians längs $x$-axeln.'
+#Checking lon-linear
+plot(predict(model_3), residuals(model_3),
+     main = "Residualer vs förväntade värden",
+     xlab = "Förväntade värden",
+     ylab = "Residualer")
+abline(h = 0, col = "red")
+```
+
+I grafen så ser vi att det finns ett svagt böjt mönster. Det kan tyda på ett avsteg från linjärt samband mellan X och Y. Mönstret är dock inte tillräckligt tydligt för att vi skall förkasta antagandet, men är värt att notera.
+
+Samtidigt verkar variansen vara relativt konstant längs x-axeln. Talar för att antagandet om homogen varians (ingen heteroskedasticitet).
+
+### Normalfördelade residualer
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: 'Observationerna följer normalfördelningen väl kring medelvärdet, men det finns avvikelser i svansarna.'
+# Q-Q-plot för residualer i modell 3
+qqnorm(residuals(model_3), 
+       main = "Q-Q-plott för att undersöka normalfördelning av residualer",
+       xlab = "Teoretiska kvantiler",
+       ylab = "Urvalskvantiler"
+       )
+qqline(residuals(model_3), col = "red")
+
+```
+
+Observationerna följer normalfördelningen väl kring medelvärdet, men det finns avvikelser i svansarna – särskilt bland höga värden. Detta indikerar att man bör vara försiktig vid prediktion av ovanligt höga bilpriser.
+ 
+### Korrelerade residualer (tidsberoende)
+Eftersom datan inte är tidsserier och varje bil är en fristående observation fanns inget behov av att undersöka tidsberoende residualer.
+
+### Outliers och leverage
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Leverage-värden för varje observation i modellen."
+plot(hatvalues(model_3), 
+     main = "Leverage-värden för varje observation",
+      xlab = "Index (observationens plats i datan)",
+     ylab = "Leverage-värde (påverkan på modellen)"     
+     )
+```
+
+```{r}
+#| echo: false
+#| warning: false
+max(hatvalues(model_3))
+train[which.max(hatvalues(model_3)), ]
+```
+
+Leverage-analysen visade att en observation (en hybrid-SUV från 2022 med 350 hk) hade ovanligt stort inflytande på modellen. Då observationen representerar verkliga och möjliga framtida biltyper valdes den ändå att behållas i datan.
+
+### Multikollinearitet
+
+```{r}
+#| echo: false
+#| warning: false
+library(car) # Run to use vif()
+vif(model_3)
+```
+
+Alla prediktorer hade VIF-värden under 3, vilket innebar att det inte fanns någon allvarlig multikollinearitet i modellen.

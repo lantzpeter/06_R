@@ -1,0 +1,6 @@
+# Appendix A
+
+All kod med mera som använts i detta arbete går att finna på följande länk: \url{https://github.com/lantzpeter/06_R}
+
+## API
+Kod för API finns på följande länk \url{https://github.com/lantzpeter/06_R/api}

@@ -1,0 +1,405 @@
+---
+title: "Metod"
+format: pdf
+---
+
+## Importering av bibliotek
+I arbetet har följande R-paket använts: tidyverse (för datahantering och visualisering), car (för multikollinearitetsanalys med vif()), leaps (för Best Subset Selection), Metrics (för beräkning av RMSE), ggplot2 (för visualiseringar), glue (för att formatera utskrifter), samt quarto (för dokumentation och rapportgenerering).
+
+## Datainsamling SCB
+Jag har hämtat extern data från SCB genom att anropa via ett API. Den data jag hämtade visar hur många personbilar som var registerade i trafik, totalt per år, mellan åren 2022 till 2024.
+
+## Datainsamling Blocket
+Jag gjorde valet att samla in data från Blocket då det är en bra erfarenhet. För att underlätta för mig själv valde jag att samla in data i en grupp med andra. Den data vi samlade in från Blocket är data för Volvo bilar vilken skall analyseras och användas för att träna regresionsmodeller.
+
+Prisinformationen i datasetet är hämtad från annonser publicerade på Blocket. Det innebär att värdena representerar vad säljare begärt, inte vad köpare faktiskt betalat. Skillnader kan därför förekomma på grund av exempelvis rabatter, prutning eller andra avvikelser från det annonserade priset.
+
+### Insamling av data
+1.  Gruppen som samlat data ihop bestod av: Alvin, Arash, Ana, Emad, Gayathree, Hani, Joakim, Katarina, Michael, My, Peter, Per, Sharmin, Rana, Tahira, Tural och Zakariyae.
+
+2.  Vi inledde arbetet med att ha ett teamsmöte där de flesta av oss var med och diskuterade hur vi skulle gå tillväga för att samla in datan. Till vår hjälp så beaktade vi bland annat frågorna i materialet rörande datainsamling i dokumentet kunskapskontrollen. Vi diskuterade bl.a om vi skulle ha flera bilmärken, ta med beskrivande information ur fritext med mera. Vi valde att hålla oss till endast Volvo bilar och nyttja fakta rutan som finns för varje annons för att få en så homogen data som möjligt för varje observation.  
+
+    \vspace{1em}
+
+    Vi delade upp hur mycket data varje person skulle samla in utifrån hur många dataobservationer vi önskade ha. Vi kom fram till att 50 observationer per person var tillräckligt. Alla fick välja ett geografiskt område på Blocket och sedan samlade alla in sina observationer på egen hand med en gemensam deadline om när det skulle vara klart.
+
+3.  Lärdomar från datainsamlingen är att det tar mer tid än man tror att samla in data manuellt. Att vara en grupp som samlar tillsammans sparar mycket tid. En svårighet med en grupp är att kunna samla alla och komma överens om hur det skall ske, men genom att prata så löser man det.
+
+    \vspace{1em}
+
+    En annan viktig detalj är att beroende på mediet man hämtar sin data ifrån, så kan varje observation av data skilja sig mycket åt, särskilt om det finns fält för fritext samt hur den som lämnat datan valt att fylla i den. Därav är det viktigt att gå igenom ett antal observationer och få en bild på hur man skall avgränsa sig för att få datan homogen, särskilt när man är många deltagare som samlar data på egen hand. Därför satte vi riktlinjer som vi skrev ner samt använde oss av en gemensam mall för att försöka säkerställa att alla hämtade och fyllde i data på samma sätt.
+
+## Städa data från Blocket
+Även om vi haft våra riktlinjer och mallar, så förekom en hel del fel i den slutliga datan. Innan denna laddades in i R så städade jag den från uppenbara fel som stavfel, fel värde i fel kolumn, stora och små bokstäver med mera, samt att vissa värden saknades. Jag korrigerade datan i Excel då det är både enklare och går snabbare att arbeta i.
+
+
+## EDA
+### Hantera saknade värden (NA)
+Efter att datan var inladdad noterade jag en del NA värden som behövde hanteras. Nedan följer en redogörelse för hur jag hanterade dessa.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#rm(list = ls())
+#importing tidyverse to use tools.
+library(tidyverse)
+data <- read.csv2("data/data_blocket_volvo.csv")
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+class(data)
+dim(data)
+head(data)
+```
+
+Här är en summering av NA värden i datan per kolumn
+
+```{r}
+#| echo: false
+#| warning: false
+colSums(is.na(data))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#Having problem finding the right row i create an index.
+data <- data |>
+  mutate(orig_row = row_number()) |>
+  relocate(orig_row, .before = everything())
+
+View(data[!complete.cases(data), ])
+```
+
+Efter att ha studerat datan så var det en observation som stack ut mycket. Den hade flera saknade värden vilket inte gick att återskapa. Därför valde jag att droppa den.
+
+```{r}
+#| echo: false
+data |>
+  filter(orig_row == 164)
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Dropping row 164 because of to many NA values.
+data <- data |>
+  filter(orig_row != 164)
+dim(data) # Checking so the observation was dropped.
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+colSums(is.na(data))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#checking the data for NA again so i can figure out what to do with the rest
+View(data[!complete.cases(data), ])
+```
+
+Jag noterade också att det fanns en till bil med flera saknade värden.
+
+```{r}
+#| echo: false
+#| warning: false
+data |>
+  filter(orig_row == 363)
+```
+
+Jag ville kolla om det fanns fler bilar av samma modell för att eventuellt kunna imputera ett värde.
+
+```{r}
+#| echo: false
+#| warning: false
+  data |>
+  filter(model == "960") |>
+  select(model, fuel, price, engine, hpower)
+```
+
+Då det inte fanns tillräckligt med liknande bilar så valde jag att även droppa denna observation.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+data <- data |>
+  filter(orig_row != 363)
+colSums(is.na(data))
+```
+
+Rent intuitivt så vet vi att antal kilometer en bil kört påverkar dess pris. Då vi saknade den här datan och den inte kan återskapas så valde jag också att droppa de observationer som saknade det värdet.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+data <- data |>
+  filter(!orig_row %in% c(183, 701))
+colSums(is.na(data))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+# Checking all NA in engine to fins patterns
+data |>
+  filter(is.na(engine)) |>
+  select(model, fuel, price, engine) |>
+  View()
+```
+
+Efter lite efterforskning vet jag nu att elbilar inte har någon storlek på motorn likt förbränningsbilar. Då jag även ville kunna prediktera på elbilar, satte jag därför motsvarande värde till 0. Om värdet skulle få vara NA kommer modellen annars att selektera bort alla elbilar, vilket inte var önskvärt.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+# To be able to predict on EV i put engine size to zero.
+data <- data |>
+  mutate(engine = ifelse(fuel == "El", 0, engine))
+```
+
+Fem observationer saknade motorvolym trots att de inte var elbilar.
+
+```{r}
+#| echo: false
+#| warning: false
+data |>
+  filter(is.na(engine)) |>
+  select(engine, model)
+```
+
+Eftersom dessa var svåra att imputera på ett tillförlitligt sätt valde jag att exkludera dem från analysen. Detta motsvarade mindre än 1% av datamängden och bedömdes inte påverka resultatet.
+
+```{r}
+#| echo: false
+#| warning: false
+data <- data |>
+  filter(!is.na(engine))
+
+colSums(is.na(data))
+```
+
+Eftersom både year_model och date_traffic speglar bilens ålder, men med marginella skillnader, valdes att endast behålla year_model. Detta eftersom det normalt är årsmodell som efterfrågas vid värdering av bilar och inte datum i trafik. date_traffic togs därför bort från datamängden för att undvika redundans och förenkla analysen.
+
+```{r}
+#| echo: false
+#| warning: false
+data <- data |>
+  select(-date_traffic)
+```
+
+Nu är alla NA värden hanterade.
+```{r}
+#| echo: false
+#| warning: false
+colSums(is.na(data))
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+
+cols_numeric <- c("price", "miles", "year_model", "engine", "hpower")
+
+data <- data |>
+  mutate(across(all_of(cols_numeric), as.numeric))
+
+sapply(data, class)
+```
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+#Saving data to be able to load it.
+save(data, file = "data/data_volvo_tidy.RData")
+
+```
+
+### Utforskande dataanalys
+För att bättre förstå datan inledde jag med en visuell och statistisk genomgång. Syftet var att undersöka vilka variabler som kan påverka priset och om det fanns en möjlighet att minska antalet variabler i den slutliga modellen.
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+library(tidyverse)
+library(ggplot2)
+load("data/data_volvo_tidy.RData")
+names(data)
+str(data)
+```
+
+Jag tittade därför på korrelationen mellan pris och övriga variabler.
+```{r}
+#| echo: false
+#| warning: false
+numeric_data <- data |> 
+  select(price, miles, year_model, engine, hpower)
+
+cor_matrix <- cor(numeric_data)
+cor_matrix
+```
+
+
+```{r}
+#| echo: false
+#| label: corr_plot
+#| fig-cap: "Korrelationsmatris mellan numeriska variabler. 1 betyder starkt positivt samband, -1 starkt negativt."
+suppressPackageStartupMessages(library(corrplot))
+corrplot(cor_matrix, method = "color",
+         type = "upper",         # only upper triangle
+         addCoef.col = "black", # digits black
+         tl.col = "black",
+         tl.srt = 45)
+```
+
+Vad vi kan utläsa är att antal körda kilometer påverkar priset negativt, vilket är helt logiskt – ju mer du har kört, desto mer slitage på bilen, vilket resulterar i ett lägre pris. Vi ser också att senare årsmodeller har en positiv påverkan på priset. Lite förvånande är att större motorer tycks påverka priset negativt. Det kan bero på att äldre bilar ofta hade större motorer, men också att elbilar med motorstorlek 0 påverkar resultatet. Vi ser även tydligt att fler hästkrafter har en positiv inverkan på priset.
+
+
+```{r}
+#| echo: false
+#| label: hist_plot
+#| fig-cap: "Visar hur bilpriserna är fördelade. X-axeln visar pris, y-axeln antal bilar i varje prisintervall. Fördelningen är inte helt normalfördelad utan lutar åt höger – vi ser alltså en viss skevhet i datan."
+ggplot(data, aes(x = price)) +
+  geom_histogram(binwidth = 5000, fill = "grey", color = "black") +
+  labs(title = "Fördelning av bilpriser", x = "Pris", y = "Antal")
+
+```
+
+För att få en tydligare bild av prisnivåerna och hur de fördelar sig mellan olika kategorier visualiserade jag datan med hjälp av boxplots. I dessa diagram framträder även outliers tydligt, vilket kan ge en indikation på ovanliga eller extrema observationer i materialet. Samtliga kategorier som visas nedan – bränsletyp, växellåda, karosstyp och säljartyp – uppvisade mönster som bedöms vara relevanta inför den fortsatta modelleringen.
+
+```{r}
+#| echo: false
+#| label: fig-box_plot_fuel
+#| fig-cap: "Prisfördelning per bränsletyp. Outliers visas som punkter."
+ggplot(data, aes(x = price, y = fuel)) +
+  geom_boxplot() +
+  labs(title = "Prisfördelning per bränsletyp", x = "Pris", y = "Bränsle")
+```
+
+Man ser tydligt i @fig-box_plot_fuel att bilar med förbränningsmotor (bensin och diesel) generellt ligger i det lägre prisspannet, medan elbilar och hybrider tenderar att ha högre priser. Det är också dessa som uppvisar flest outliers på den övre delen av prisskalan.
+
+```{r}
+#| echo: false
+#| label: box_plot_gear
+#| fig-cap: "Prisfördelning per växellådstyp."
+ggplot(data, aes(x = gear, y = price)) +
+  geom_boxplot() +
+  labs(title = "Prisfördelning per växellådstyp", x = "Växellåda", y = "Pris") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+#| echo: false
+#| label: box_plot_type
+#| fig-cap: "Prisfördelning per karosstyp."
+
+ggplot(data, aes(x = type, y = price)) +
+  geom_boxplot() +
+  labs(title = "Prisfördelning per karosstyp", x = "Karosstyp", y = "Pris") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+#| echo: false
+#| label: box_plot_seller
+#| fig-cap: "Prisfördelning beroende på säljare."
+ggplot(data, aes(x = seller, y = price)) +
+  geom_boxplot() +
+  labs(title = "Pris beroende på säljartyp", x = "Säljare", y = "Pris") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#| warning: false
+# Check the minimum and maximum values for key numerical columns.
+data |> 
+  summarise(
+    min_price = min(price),
+    max_price = max(price),
+    min_miles = min(miles),
+    max_miles = max(miles),
+    min_year = min(year_model),
+    max_year = max(year_model),
+    min_engine = min(engine),
+    max_engine = max(engine),
+    min_hpower = min(hpower),
+    max_hpower = max(hpower)
+  )
+```
+
+En observation med ett orimligt lågt pris (100 kr) exkluderades från analysen. Baserat på bilens övriga specifikationer bedömdes priset vara felaktigt registrerat eller oskäligt lågt, möjligen till följd av okänt fel på bilen.
+
+```{r}
+#| echo: false
+data |> 
+  filter(price == min(price)) |>
+  select(price, model, year_model, fuel, engine, hpower)
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+data <- data |>
+  filter(orig_row != 385)
+```
+
+
+```{r}
+#| echo: false
+#| results: "hide"
+#Saving data to use in Result chapter
+save(data, file = "data/data_volvo_prepared.RData")
+```
+
+## Uppdelning av data
+Efter att all data gåtts igenom var det dags att träna modeller. Innan jag tränade modellerna så delade jag upp datan i träning, validering och test. Träning för att träna modeller, validering för att validera och test används för den slutliga modellen för att mäta dess förmåga att generalisera på ny osedd data.
+Fördelningen var 60 % träning, 20 % validering och 20 % test.
+
+Trots att prisfördelningen var skev valdes att inte log-transformera variabeln. Detta för att behålla tolkningsbarheten av resultatet i originalskalan.
+
+## Modellstrategi
+Syftet med arbetet var att identifiera en enkel linjär modell som med hög säkerhet kan prediktera priset på en bil även för osedd data. Målet var att hitta en modell med så få som möjligt – helst 2 – 3 – prediktorer utan att tappa för mycket i förklaringsgrad.
+
+Det hade varit möjligt att direkt bygga en modell baserat på intuition om vilka variabler som påverkar priset mest. Men eftersom datamängden innehåller många potentiella prediktorer, valde jag att inledningsvis inkludera samtliga och sedan successivt utesluta de som inte hade signifikant påverkan. På så vis kunde jag säkerställa att den slutliga modellen både var enkel och baserad på relevant information.
+
+### Modell 1
+Den första modellen som tränades var en multipel regressionsmodell med samtliga tillgängliga prediktorer.
+
+#### Hypotesprövning av prediktorer
+För att bygga en så enkel modell som möjligt testade jag nollhypotesen – att variablerna inte har någon signifikant påverkan på priset. Om de inte verkade påverka priset valde jag att exkludera dem från modellen. Som mått använde jag ett p-värde på 0,05, där värden över detta inte anses signifikanta.
+
+Efter att ha tränat modellen visade det sig att flera prediktorer inte var signifikanta. Därför exkluderades color och region för att förenkla modellen och undvika multikollinearitet.
+
+#### Exkludering av få observationer
+Modellnamn C70 förekom endast fyra gånger i hela datamängden. På grund av det låga antalet observationer valde jag att exkludera dessa innan modellträning, eftersom det annars skulle skapa problem med multikollinearitet och göra vissa koefficienter omöjliga att uppskatta. Exkluderingen gjordes för alla tre dataset, träning, validering och test. Detta för att ha homogena dataset vilka också är de samma som övriga modeller kommer att tränas utifrån, så att förustättningarna är de samma. 
+
+### Modell 2
+I modell 2 valde jag att inkludera de variabler som både är lätta att mäta och som enligt den första modellen visade starkast påverkan på priset. Modell 3 bygger därefter på ett mer systematiskt urval baserat på statistiska kriterier.
+
+### Modell 3
+Jag använde Best Subset Selection för att träna modellen med samtliga elva prediktorer, i syfte att identifiera den bästa kombinationen av variabler för att prediktera bilens pris. Metoden föreslog en modell med fyra prediktorer, där den fjärde var en specifik bilmodell (EX90). Eftersom EX90 endast representerar ett enskilt modellnamn och därmed har begränsad generaliserbarhet, valde jag att istället använda en mer allmän variabel. Baserat på tidigare insikter från bland annat boxplots valde jag därför att inkludera fuel, som anger bilens bränsle (t.ex. El eller Hybrid), vilket är mer representativt för olika biltyper. Modell 3 tränades därför på miles, year_model, hpower och fuel.

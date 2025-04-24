@@ -1,0 +1,40 @@
+---
+title: "Referenser"
+suppress-bibliography: true
+format:
+  pdf:
+    number-sections: true
+    toc: true
+---
+
+Blocket AB. (2024). Blocket – Sveriges största marknadsplats. Hämtad från \url{https://www.blocket.se}
+
+Fox, J., & Weisberg, S. (2023). Companion to Applied Regression (R package version 3.1-2). \url{https://CRAN.R-project.org/package=car}
+
+Fellows, I. (2020). Metrics: Evaluation Metrics for Machine Learning (R package version 0.1.4). \url{https://CRAN.R-project.org/package=Metrics}
+
+Hester, J., & Wickham, H. (2023). glue: Interpreted String Literals (R package version 1.6.2). \url{https://CRAN.R-project.org/package=glue}
+
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2023). An Introduction to Statistical Learning: with Applications in R (2nd ed.). Springer. \url{https://www.statlearning.com/}
+
+Lahti, L., & Nieminen, M. (2024). Accessing PX-Web Statistics from R with the pxweb Package. Hämtad från \url{https://ropengov.github.io/pxweb/articles/pxweb.html}
+
+Lumley, T. (2022). Regression Subset Selection (R package version 3.1). \url{https://CRAN.R-project.org/package=leaps}
+
+OpenAI. (2024). ChatGPT (Version 4.0). \url{https://chat.openai.com}
+
+Posit. (2024). Quarto – Scientific and Technical Publishing System. \url{https://quarto.org/}
+
+Prgomet, A. (2024). DS24 R-kursmaterial. Hämtad från \url{https://github.com/AntonioPrgomet/ds24_r}
+
+Prgomet, A. (2024). R: Validera och jämföra modeller med valideringsdata [YouTube-video]. Hämtad från \url{https://www.youtube.com/watch?v=NcxMuCG6FS8}
+
+Prgomet, A. (2024). Simple Linear Regression – Föreläsningsanteckningar [PDF]. Hämtad från \url{https://github.com/AntonioPrgomet/linear_regression/blob/main/f%C3%B6rel%C3%A4sningsanteckningar.pdf}
+
+Statistiska centralbyrån. (2024). Statistikdatabasen. Hämtad från \url{https://www.scb.se}
+
+Wickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York. \url{https://ggplot2.tidyverse.org}
+
+Wickham, H., & Cetinkaya-Rundel, M. (2023). R for Data Science (2nd ed.). O’Reilly Media. \url{https://r4ds.hadley.nz}
+
+Wickham, H., et al. (2023). The tidyverse: Easily Install and Load the 'Tidyverse' (R package version 2.0.0). \url{https://www.tidyverse.org}

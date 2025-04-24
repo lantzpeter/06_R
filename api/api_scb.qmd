@@ -1,0 +1,27 @@
+---
+title: "API Statistiska Centralbyrån"
+format: html
+---
+
+Jag vet inte vad du heter
+
+```{r}
+#install.packages("pxweb") -- remove # to install package
+library(pxweb)
+
+#Tutorial/Interface
+vignette(topic="pxweb")
+
+# Navigate through all pxweb api:s in the R package API catalogue
+d <- pxweb_interactive()
+d
+
+#Saving data to new variable for easier use.
+traffic <- d$data
+traffic
+dim(traffic)
+```
+```{r}
+  install.packages("tinytex")
+  tinytex::install_tinytex()
+```

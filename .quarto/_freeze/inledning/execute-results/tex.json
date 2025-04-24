@@ -1,0 +1,21 @@
+{
+  "hash": "c8f5f47d147baca93908e794930eb962",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Inledning\"\nformat:\n  pdf\n---\n\n\n\n\\pagenumbering{arabic}\n\n## Bakgrund\nI dagens samhälle är vi allt mer beroende av transporter för att kunna uppfylla våra dagliga åtaganden – arbete, inköp, fritidsaktiviteter och familjelogistik. Trots att det finns andra transportalternativ upplever många bilen som ett bekvämt och flexibelt val, eftersom den erbjuder kontroll och oberoende.\n\nDenna utveckling återspeglas i antalet personbilar i trafik, som enligt @fig-trafik har ökat från 4 042 790 år 2002 till 4 977 791 år 2024 – en ökning med nästan 935 000 bilar på 22 år.\n\nSamtidigt ser vi två trender på bilmarknaden: människor byter bil oftare, och den tekniska utvecklingen går snabbt framåt. Detta skapar en utmaning – det är svårt för bilköpare att jämföra bilar och bedöma deras värde på ett tillförlitligt sätt. Det väcker frågan om det är möjligt att använda en prediktiv modell för att uppskatta ett rimligt pris på en bil utifrån vissa egenskaper.\n\nVärt att nämna är att prisuppgifterna i detta arbete hämtats från annonser, vilket innebär att de speglar utgångspriser snarare än faktiska försäljningspriser.\n\n\n\n\n::: {.cell}\n\n:::\n\n::: {.cell}\n::: {.cell-output-display}\n![Visar antalet personbilar totalt per år mellan åren 2002 - 2024.](inledning_files/figure-pdf/fig-trafik-1.pdf){#fig-trafik}\n:::\n:::\n\n\n\n\n## Syfte\nSyftet med denna rapport är att undersöka om en statistisk modell kan prediktera priset på en bil med tillräcklig precision utifrån ett antal tekniska och praktiska parametrar.\n\nFör att besvara syftet fokuserar arbetet på följande frågeställningar:\n\n1.\tKan en linjär regressionsmodell för bilpris uppnå en förklaringsgrad (R²) på minst 0,80? Detta skulle innebära att modellen förklarar minst 80 % av variationen i bilpriset.\n\n2.\tÄr det möjligt att uppnå denna nivå av precision med endast 2–3 prediktorer?\nHär undersöks om modellen kan förbli enkel utan att tappa för mycket i prestanda.\n\n",
+    "supporting": [
+      "inledning_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {
+      "knitr": [
+        "{\"type\":\"list\",\"attributes\":{},\"value\":[]}"
+      ]
+    },
+    "preserve": null,
+    "postProcess": false
+  }
+}

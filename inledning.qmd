@@ -1,0 +1,47 @@
+---
+title: "Inledning"
+format:
+  pdf
+---
+\pagenumbering{arabic}
+
+## Bakgrund
+I dagens samhälle är vi allt mer beroende av transporter för att kunna uppfylla våra dagliga åtaganden – arbete, inköp, fritidsaktiviteter och familjelogistik. Trots att det finns andra transportalternativ upplever många bilen som ett bekvämt och flexibelt val, eftersom den erbjuder kontroll och oberoende.
+
+Denna utveckling återspeglas i antalet personbilar i trafik, som enligt @fig-trafik har ökat från 4 042 790 år 2002 till 4 977 791 år 2024 – en ökning med nästan 935 000 bilar på 22 år.
+
+Samtidigt ser vi två trender på bilmarknaden: människor byter bil oftare, och den tekniska utvecklingen går snabbt framåt. Detta skapar en utmaning – det är svårt för bilköpare att jämföra bilar och bedöma deras värde på ett tillförlitligt sätt. Det väcker frågan om det är möjligt att använda en prediktiv modell för att uppskatta ett rimligt pris på en bil utifrån vissa egenskaper.
+
+Värt att nämna är att prisuppgifterna i detta arbete hämtats från annonser, vilket innebär att de speglar utgångspriser snarare än faktiska försäljningspriser.
+
+```{r}
+#| echo: false
+#Load
+traffic <- read.csv("data/traffic.csv")
+traffic$år <- as.numeric(traffic$år)
+```
+
+```{r}
+#| echo: false
+#| label: fig-trafik
+#| fig-cap: "Visar antalet personbilar totalt per år mellan åren 2002 - 2024."
+plot(traffic$år, traffic$Antal,
+     xlab = "År",
+     ylab = "Antal bilar i miljoner",
+     type = "b",
+     col = "black",
+     xaxt = "n")
+
+axis(1, at = traffic$år, labels = traffic$år)
+```
+
+## Syfte
+Syftet med denna rapport är att undersöka om en statistisk modell kan prediktera priset på en bil med tillräcklig precision utifrån ett antal tekniska och praktiska parametrar.
+
+För att besvara syftet fokuserar arbetet på följande frågeställningar:
+
+1.	Kan en linjär regressionsmodell för bilpris uppnå en förklaringsgrad (R²) på minst 0,80? Detta skulle innebära att modellen förklarar minst 80 % av variationen i bilpriset.
+
+2.	Är det möjligt att uppnå denna nivå av precision med endast 2–3 prediktorer?
+Här undersöks om modellen kan förbli enkel utan att tappa för mycket i prestanda.
+

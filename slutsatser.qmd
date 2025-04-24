@@ -1,0 +1,10 @@
+---
+title: "Slutsatser"
+format: pdf
+---
+
+Redan efter första modellträningen uppnåddes ett av målen i arbetet – att nå en förklaringsgrad R² på minst 0,80. Den första modellen gav ett R² på över 0,91, vilket visade att en linjär regressionsmodell har potential att prediktera bilpriser med hög precision.
+
+Nästa fråga var om man kunde nå en liknande förklaringsgrad med färre prediktorer. Jag undersökte aldrig specifikt om två prediktorer räckte för att nå R² > 0,80, men jag testade två enklare modeller: en med tre prediktorer och en med fyra. Båda nådde målet. Resultatet visade att en modell med endast year_model, miles, hpower – och i det ena fallet även fuel – kunde prediktera priset på en bil med relativt hög noggrannhet.
+
+Även om modell 1 presterade bäst rent statistiskt, visade både modell 2 och 3 att det går att nå en förklaringsgrad över 80 % utan att använda alla variabler. Därmed uppnåddes studiens syfte: att ta fram en enkel men träffsäker modell för att prediktera bilpriser.

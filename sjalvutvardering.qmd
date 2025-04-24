@@ -1,0 +1,19 @@
+---
+title: "Självutvärdering"
+format: pdf
+---
+
+1.	Vad tycker du har varit roligast i kunskapskontrollen?
+Låter kanske diplomatiskt, men jag skulle säga helheten, att det varit flera olika moment som jag fått utföra och bygga samman. Att hämta data via API, samla in data från Blocket och hanterat svårigheterna i det. Att jag verkligen, som jag önskat mer av, få djupdyka i EDAn för att titta på datan och hantera saknade värden m.m. Jag tycker också det varit givande att få tillämpa mer av den statistiska delen i arbetet för att få en djupare förståelse för det och att det faktiskt är häftigt, att man vid prediktion eller liknanande också statistiskt genom konfidens- och prediktionsintervall kan säga hur "säker" man är på det värdet. Det tycker jag är väldigt intressant.
+
+2.	Hur har du hanterat utmaningar? Vilka lärdomar tar du med dig till framtida kurser?
+När jag stött på utmaningar så har jag försökt se objektivt på det, alternativt så har jag varit intresserad av att undersöka en väg och därför valt att pröva den. Det har inte alltid varit tydligt vilken väg man skall gå eller hur ett problem skall lösas. Har jag inte direkt kunnat lösa det så har jag lämnat datorn ett tag och kommit tillbaka och då fått nya infallsvinklar vilket hjälpt mig lösa problemen. 
+
+Vidare har jag också när jag hamnat vid ett vägskäl valt att gå den väg jag vill och tänkt att jag bara argumenterar för min sak och därmed kommit vidare. Att välja sin väg och argumentara för det tror jag har varit den mest givande erfarenheten. Allt är långt ifrån perfekt och problem uppstår och man får omvärdera.
+
+3.	Vilket betyg anser du att du ska ha och varför? 
+Jag anser mig uppnå de kriterier som krävs för VG då jag bland annat tillämpat insamling av data via API och insamling av data bia Blocket. Vidare har jag också pröva olika modeller, tittat på olika teoretiska antaganden, multikollinearitet, linjärt samband mellan X och Y, normalfördelade residualer osv. Jag har också metodiskt och mer djupgående granskat och hanterat datan och de problem som varit. Tycker att jag gjort ett ganska gediget arbete.
+
+
+4.	Något du vill lyfta till Antonio? 
+Kursen har varit bra och rolig. Gillar som nämnnts ovan att vi fått nyttjat flera olika moment och bygga en helhet och att statistiken involverats. Varit väldigt lärorikt att undersöka de olika teroretiska antagandena. Du har också som vanligt varit väldigt hjälpsam och duktig på att förklara svåra begrepp och visa oss hur det fungerar och hänger ihop. Uppskattat!

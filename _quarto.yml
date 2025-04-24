@@ -1,0 +1,28 @@
+project:
+  type: book
+
+book:
+  title: "R Programmering"
+  author: "Peter Lantz"
+  date: "2025-04-23"
+  chapters:
+    - abstract.qmd
+    - index.qmd
+    - inledning.qmd
+    - teori.qmd
+    - metod.qmd
+    - resultat.qmd
+    - undersokning_antaganden.qmd
+    - slutsatser.qmd
+    - teorifragor.qmd
+    - sjalvutvardering.qmd
+    - appendix.qmd
+    - referenser.qmd
+
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    lang: sv
+    keep-tex: true
+    include-in-header: preamble.tex

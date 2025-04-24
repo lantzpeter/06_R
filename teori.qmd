@@ -1,0 +1,105 @@
+---
+title: "Teori"
+format: pdf
+---
+
+## Linjär regression
+Linjär regression används för att undersöka sambandet mellan en beroende variabel ($Y$) och en eller flera oberoende variabler ($X$).
+
+Det finns två typer:
+
+- Enkel linjär regression, där det finns en oberoende variabel.
+
+- Multipel linjär regression, där det finns flera oberoende variabler.
+
+Enkel linjär regression skrivs som:
+$$
+y = \beta_0 + \beta_1 x + \varepsilon
+$$
+
+Multipel linjär regression skrivs som:
+
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p + \varepsilon
+$$
+
+(Prgomet, 2024)
+
+## Prediktorer och responsvariabel
+Prediktorerna $(X)$ är de olika variabler vi använder i modellen. Exempel på sådana variabler är lön, utbildning och ålder. Responsvariabeln $(Y)$ även kallad målvariabeln är den vi vill förutsäga med hjälp av variablerna $X$. Enligt samma exempel så skulle detta vara lön.
+
+När modellen tränas så beräknas en koefficient för varje enskild variabel $X$, vilket representerar hur mycket just den variabeln påverkar $Y$ (Prgomet, 2024).
+
+## R² och justerat R²
+"Visar hur stor andel av variationen i den oberoende variabeln $Y$ som kan förklaras med sambandet av den oberoede variabeln $X$"(Prgomet, 2024, s. 9). Värdet ligger mellan 0 och 1.
+
+Justerat R² används för att justera måttet när man har flera prediktorer då måttet annars skulle öka för varje ny prediktor som adderas (Prgomet, 2024).
+
+$$
+R^2 = 1 - \frac{\text{RSS}}{\text{TSS}}
+$$
+
+
+$$
+R^2_{\text{adj}} = 1 - \left( \frac{(1 - R^2)(n - 1)}{n - p - 1} \right)
+$$
+
+## RMSE
+RMSE används för att mäta medelfelet i modellens prediktioner. Det mäter avståndet mellan de faktiska värdena och de predikterade värdena (Prgomet, 2024).
+$$
+\text{RMSE} = \sqrt{ \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 }
+$$
+
+## BIC
+BIC är ett mått som används för att jämföra olika modeller. Det tar hänsyn till både hur bra modellen passar datan och hur komplex modellen är. Ett lågt BIC indikerar en bättre modell. Måttet straffar modeller med många prediktorer, särskilt vid större datamängder, vilket är väligt användbart för att undvika överanpassning (James, Witten, Hastie & Tibshirani, 2023, s. 324).
+
+$$
+\text{BIC} = \frac{\text{RSS}}{n \cdot \hat{\sigma}^2} + \log(n) \cdot d
+$$
+
+## P-värde och hypotesprövning
+### P-värde
+P-värdet visar hur troligt det är att ett samband mellan en variabel och $Y$ uppstått av en slump.
+Ett lågt p-värde tyder på att sambandet är verkligt och inte bara tillfälligt (James, Witten, Hastie & Tibshirani, 2023, s. 68).
+
+### Hyppotesprövnning
+Vi testar om en variabel påverkar $Y$ genom att jämföra två hypoteser:
+- Nollhypotes ($H_0$): Ingen påverkan (koefficienten = 0)
+- Mothypotes ($H_1$): Variabeln påverkar $Y$
+
+Om p-värdet är lågt (t.ex. < 0,05) förkastar vi nollhypotesen och säger att sambandet är signifikant (Prgomet, 2024).
+
+## Dummyvariabler
+När kategoriska variabler används i en linjär regressionsmodell omvandlas de automatiskt till så kallade dummyvariabler.
+Det innebär att varje kategori blir en egen binär (0 eller 1) kolumn, vilket gör det möjligt att använda dem som numeriska prediktorer i modellen (Prgomet, 2024).
+
+## Multikollinearitet & VIF
+Multikollinearitet uppstår när två eller flera prediktorer i modellen är starkt korrelerade med varandra. Det kan göra det svårt att avgöra vilken variabel som faktiskt påverkar $Y$, eftersom deras effekter "överlappar".
+För att upptäcka multikollinearitet används bland annat VIF (Variance Inflation Factor). Ett högt VIF-värde (t.ex. över 5 eller 10) kan tyda på problem med multikollinearitet (Prgomet, 2024).
+
+## Best Subset Selection
+Best Subset Selection är en metod för att hitta den bästa modellen med ett visst antal prediktorer. Genom att jämföra alla möjliga kombinationer väljs den modell som ger bäst prestanda enligt mått som t.ex. justerat R² eller BIC (James, Witten, Hastie & Tibshirani, 2023, s. 227).
+
+## Antaganden i linjär regression
+### Normalfördelade residualer
+För att få pålitlig inferens som konfidensintervall förutästter det att vi har normalfördelade residualer. Om residualerna inte är normalfördelade kan man undersöka om det exempelvis finns outliers i datan som påverkar fördelningen (Prgomet, 2024).
+
+### Linjärt samband mellan X och Y
+Enkel- eller multipel regression bygger på att det finns ett linjärt samband mellan den oberoende variabeln $X$ och den beroende varibeln $Y$. Finns det inget linjärt samband så kan vi inte lita på prediktioner eller inferens. För att undersöka sambandet kan man visualisera residualerna (Prgomet, 2024).
+
+### Homoskedasticitet (konstant varians)
+Vid beräkning av standardavikelse för beta koefficienterna och predikterade värden, antas att variansen är homogen, det vill säga konstant. Annars har vi heteroskedasticitet, vilket innebär att prediktioner och inferens blir fel (Prgomet, 2024).
+
+### Oberoende residualer
+Residualerna i en regressionsmodell förutsätts vara oberoende av varandra, vilket innebär att feltermerna inte får vara korrelerade. Detta är särskilt viktigt i tidsserieanalys (Prgomet, 2024). I detta arbete är datan inte tidsberoende, och därför har detta antagande inte undersökts i detalj.
+
+### Outliers/high leverage
+Outliers är observerade värden som ligger längre eller långt bort från det uppskattade värdet. High leverage innebär att dessa värden kan ha en stor eller större påverkan på modellen. Det är därför bra praxis att studera om det finns outliers i datan och eventuellt hantera dessa (Prgomet, 2024).
+
+
+## Konfidens- och prediktionsintervall
+### Konfidensintervall
+Konfidensintervallet uppskattar hur säkra vi är på det förväntade medelvärdet för $Y$. Det ger ett intervall med ett undre och ett övre värde där vi förväntar oss att det sanna medelvärdet ligger (Prgomet, 2024).
+
+### Prediktionsintervall
+Prediktionsintervallet är alltid bredare än konfidensintervallet, eftersom det även tar hänsyn till feltermen ($\varepsilon$) – alltså den slumpmässiga variationen vid en ny observation. Det speglar osäkerheten i själva observationen, inte bara medelvärdet (Prgomet, 2024).
